@@ -1,4 +1,4 @@
-name: 'webhook-action'
+name: 'wonejomb-webhook-action'
 description: 'A github action for discord webhooks.'
 inputs:
   version:
