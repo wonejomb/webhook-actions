@@ -1,0 +1,30 @@
+name: 'webhook-action'
+description: 'A github action for discord webhooks.'
+inputs:
+  version:
+    description: 'The build version.'
+    required: false,
+    default: '?'
+  webhook_url:
+    description: 'The discord webhook URL.'
+    required: true
+  webhook_name:
+    description: 'The discord webhook name.'
+    required: true
+  webhook_logo:
+    description: 'The webhook display avatar URL.'
+    required: true
+  webhook_embed_color:
+    description: 'The webhook embed color.'
+    required: true,
+    default: 0xFFFFFFFF
+  fields:
+    description: 'Additional fields in the embed.'
+    required: false
+  github_token:
+    description: 'The GitHub token.'
+    required: false
+    default: ${{ github.token }}
+  runs:
+    using: 'node20'
+    main: 'src/index.js'
