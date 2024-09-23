@@ -15,12 +15,6 @@ class Status {
     }
 }
 
-const StartedStatus = Status.Started;
-const SuccessStatus = Status.Success;
-const FailedStatus = Status.Failed;
-const CancelledStatus = Status.Cancelled;
-const TimedoutStatus = Status.Timedout;
-
 async function run() {
     try {
         const octo = getOctokit(getInput("github_token"));
@@ -29,35 +23,36 @@ async function run() {
             ...context.repo,
             ref: context.sha
         });
-        
+
         const commitStatus = await octo.rest.repos.getCombinedStatusForRef({
             ...context.repo,
             ref: context.sha
         });
+
         const status = getByStatus(commitStatus.data.state);
 
-        const fields = [];
-        fields.push({ name: 'Build Branch', value: context.payload.ref?.toString().replace("refs/heads/", ""), inline: true });
-        fields.push({ name: `Commit Sender`, value: lastCommit.data.author.name, inline: true });
+        const fields = [
+            { name: 'Build Branch', value: context.payload.ref?.replace("refs/heads/", ""), inline: true },
+            { name: 'Commit Sender', value: lastCommit.data.author?.name || 'Unknown Author', inline: true }
+        ];
 
         const embed = {
             title: `Build ${status.friendlyName} | [${context.repo.repo}](https://github.com/${context.repo.owner}/${context.repo.repo})`,
-            type: 'rich',
             description: `\`\`\`${lastCommit.data.commit.message}\`\`\``,
             color: status.color,
             url: lastCommit.data.html_url,
             timestamp: new Date().toISOString(),
             fields: fields,
             author: {
-                name: `${lastCommit.data.author?.name || 'Unknown Author'}`,
-                url: `${lastCommit.data.author?.html_url || "https://avatars.githubusercontent.com/u/9919?s=200&v=4"}`,
-                icon_url: `${lastCommit.data.author.avatar_url}`
+                name: lastCommit.data.author?.name || 'Unknown Author',
+                url: lastCommit.data.author?.html_url || "https://avatars.githubusercontent.com/u/9919?s=200&v=4",
+                icon_url: lastCommit.data.author?.avatar_url || "https://avatars.githubusercontent.com/u/9919?s=200&v=4"
             }
         };
 
         const json = {
-            name: getInput("webhook_name"),
-            avatar_url: getInput("webhook_avatar"),
+            username: getInput("webhook_name") || "GitHub Actions",
+            avatar_url: getInput("webhook_avatar") || "https://avatars.githubusercontent.com/in/15368?v=4",
             embeds: [embed]
         };
 
@@ -71,7 +66,7 @@ async function run() {
 
         console.log(`Webhook response: ${response.status} - ${JSON.stringify(response.data)}`);
     } catch (error) {
-        console.error(`Failed to send webhook: ${error}`);
+        console.error(`Failed to send webhook: ${error.message}`);
         console.error(`Error details: ${error.response ? JSON.stringify(error.response.data) : error.message}`);
         setFailed(error.message);
     }
@@ -81,20 +76,20 @@ function getByStatus(status) {
     switch (status.toLowerCase()) {
         case 'started':
         case 'pending':
-            return StartedStatus;
+            return Status.Started;
         case 'success':
-            return SuccessStatus;
+            return Status.Success;
         case 'failure':
-            return FailedStatus;
+            return Status.Failed;
         case 'cancelled':
         case 'canceled':
-            return CancelledStatus;
+            return Status.Cancelled;
         case 'timedout':
         case 'timeout':
-            return TimedoutStatus;
+            return Status.Timedout;
         default:
-            return StartedStatus;
+            return Status.Started;
     }
 }
 
-run ()
+run();
