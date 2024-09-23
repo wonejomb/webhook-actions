@@ -33,11 +33,13 @@ async function run() {
 
         const fields = [
             { name: 'Build Branch', value: context.payload.ref?.replace("refs/heads/", ""), inline: true },
-            { name: 'Commit Sender', value: lastCommit.data.author?.name || 'Unknown Author', inline: true }
+            { name: 'Commit Sender', value: lastCommit.data.author?.name || 'Unknown Author', inline: true },
+            { name: `Repo URL`, value: `[${context.repo.repo}](https://github.com/${context.repo.owner}/${context.repo.repo})`, inline: true }
+        
         ];
 
         const embed = {
-            title: `Build ${status.friendlyName} | [${context.repo.repo}](https://github.com/${context.repo.owner}/${context.repo.repo})`,
+            title: `Build ${status.friendlyName}`,
             description: `\`\`\`${lastCommit.data.commit.message}\`\`\``,
             color: status.color,
             url: lastCommit.data.html_url,
