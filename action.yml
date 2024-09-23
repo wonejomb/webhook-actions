@@ -1,31 +1,23 @@
-name: 'wonejomb-webhook-action'
-description: 'A github action for discord webhooks.'
-icon: activity
+name: 'wonejomb-webhook-actions'
+author: 'WonejoMB'
+description: 'Send better discord embeds with webhooks'
 inputs:
-  version:
-    description: 'The build version.'
-    required: false,
-    default: '?'
   webhook_url:
-    description: 'The discord webhook URL.'
+    description: 'The discord webhook URL'
     required: true
-  webhook_name:
-    description: 'The discord webhook name.'
-    required: true
-  webhook_logo:
-    description: 'The webhook display avatar URL.'
-    required: true
-  webhook_embed_color:
-    description: 'The webhook embed color.'
-    required: true,
-    default: 0xFFFFFFFF
-  fields:
-    description: 'Additional fields in the embed.'
+  webhook_avatar:
+    description: 'The dicord webhook avatar'
     required: false
+    default: 'https://avatars.githubusercontent.com/in/15368?v=4'
+  webhook_name:
+    description: 'The discord webhook name'
+    required: false
+    default: 'Github Actions'
   github_token:
-    description: 'The GitHub token.'
+    description: 'The GitHub Token'
     required: false
     default: ${{ github.token }}
-  runs:
-    using: 'node20'
-    main: 'src/index.js'
+
+runs:
+  using: 'node20'
+  main: 'src/index.js'

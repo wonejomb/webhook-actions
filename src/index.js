@@ -1,68 +1,66 @@
 const { getInput, setFailed } = require("@actions/core");
 const { context, getOctokit } = require("@actions/github");
 const axios = require("axios");
+const Status = require("./Status");
 
-module.exports = async function run() {
+module.exports = async function run () {
     try {
         const octo = getOctokit(getInput("github_token"));
-        const lastCommit = await octo.rest.repos.getCommit({
-            ...context.repo,
-            ref: context.sha
-        });
+        const lastCommit = await octo.rest.repos.getCommit({ ...context.repo, ref: context.sha });
 
         const fields = [];
-        if (getInput("version") && getInput("version") !== "?") {
-            fields.push({ name: "Version", value: getInput("version"), inline: true });
-        }
+        fields.push({ name: 'Build Branch', value: context.payload.ref?.toString().replace("refs/heads/", ""), inline: true});
 
-        fields.push({
-            name: "Build Branch",
-            value: context.payload.ref?.toString().replace("refs/heads/", "") || "",
-            inline: true
-        });
-
-        if (getInput('fields')) {
-            const inputFields = JSON.parse(getInput('fields'));
-            inputFields.forEach((field) => fields.push(field));
-        }
-
+        const status = getByStatus(lastCommit.status);
+        
         const embed = {
-            title: `Build Commit`,
+            title: `Build ${status.friendlyName} | [${context.repo.repo}](https://github.com/${context.repo.owner}/${context.repo.repo})`,
             description: `\`\`\`${lastCommit.data.commit.message}\`\`\``,
-            url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-            color: getInput('webhook_embed_color'),
+            color: status.color,
             fields: fields,
             author: {
-                name: context.repo.repo,
-                url: `https://github.com/${context.repo.owner}/${context.repo.repo}`,
-                icon_url: `https://github.com/${context.repo.owner}.png`
+                name: lastCommit.data.author.name,
+                url: `https://github.com/${lastCommit.data.author.name}`,
+                icon_url: lastCommit.data.author.avatar_url
             },
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString ()
         };
-
-        if (includeCommitInfo) {
-            embed.footer = {
-                text: lastCommit.data.author?.login || "",
-                icon_url: lastCommit.data.author?.avatar_url || ""
-            };
-        }
-
+        
         const json = {
-            username: `${getInput("webhook_name")}`,
-            avatar_url: `${getInput("webhook_logo")}`,
+            username: getInput("webhook_name"),
+            avatar_url: getInput("webhook_avatar"),
             embeds: [embed]
         };
 
-        console.log(`Post body: ${JSON.stringify(json)}`);
+        console.log(`Post Body: ${JSON.stringify(json)}`);
+
         await axios.post(getInput("webhook_url"), json, {
             headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json'
             }
-        });
-    } catch (error) {
-        console.error(`Failed: ${error}`);
+        })
+    } catch ( error ) {
+        console.log("Failed: " + error);
         setFailed(error.message);
     }
 }
 
-run();
+function getByStatus(status) {
+    switch (status.toLowerCase()) {
+        case 'started':
+        case 'pending':
+            return Status.Started;
+        case 'success':
+            return Status.Success;
+        case 'failure':
+            return Status.Failed;
+        case 'cancelled':
+        case 'canceled':
+            return Status.Cancelled;
+        case 'timedout':
+        case 'timeout':
+            return Status.Timedout;
+        default:
+            return Status.Started;
+    }
+}
