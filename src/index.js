@@ -34,13 +34,16 @@ module.exports = async function run () {
 
         console.log(`Post Body: ${JSON.stringify(json)}`);
 
-        await axios.post(getInput("webhook_url"), json, {
+        const respose = await axios.post(getInput("webhook_url"), json, {
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json"
             }
-        })
+        });
+
+        console.log(`Webhook respose: ${respose.status} - ${JSON.stringify(response.data)}`);
     } catch ( error ) {
-        console.log("Failed: " + error);
+        console.error(`Failed to send webhook: ${error}`);
+        console.error(`Error details: ${error.respose ? JSON.stringify(error.response.data) : error.message}`);
         setFailed(error.message);
     }
 }
