@@ -49,8 +49,8 @@ async function run() {
             timestamp: new Date().toISOString(),
             fields: fields,
             author: {
-                name: `${lastCommit.data.author.name}`,
-                url: `${lastCommit.data.author.html_url}`,
+                name: `${lastCommit.data.author?.name || 'Unknown Author'}`,
+                url: `${lastCommit.data.author?.html_url || "https://avatars.githubusercontent.com/u/9919?s=200&v=4"}`,
                 icon_url: `${lastCommit.data.author.avatar_url}`
             }
         };
