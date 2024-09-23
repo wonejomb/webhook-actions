@@ -6,7 +6,7 @@ inputs:
     description: 'The discord webhook URL'
     required: true
   webhook_avatar:
-    description: 'The dicord webhook avatar'
+    description: 'The discord webhook avatar'
     required: false
     default: 'https://avatars.githubusercontent.com/in/15368?v=4'
   webhook_name:
