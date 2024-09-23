@@ -24,12 +24,7 @@ async function run() {
             ref: context.sha
         });
 
-        const commitStatus = await octo.rest.repos.getCombinedStatusForRef({
-            ...context.repo,
-            ref: context.sha
-        });
-
-        const status = getByStatus(commitStatus.data.state);
+        const status = getByStatus(getInput("status"));
 
         const fields = [
             { name: 'Build Branch', value: context.payload.ref?.replace("refs/heads/", ""), inline: true },

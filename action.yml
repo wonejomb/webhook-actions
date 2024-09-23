@@ -13,6 +13,9 @@ inputs:
     description: 'The discord webhook name'
     required: false
     default: 'Github Actions'
+  status:
+    description: 'The build status'
+    required: true
   github_token:
     description: 'The github token'
     required: false
