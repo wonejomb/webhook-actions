@@ -1,29 +1,50 @@
 const { getInput, setFailed } = require("@actions/core");
 const { context, getOctokit } = require("@actions/github");
 const axios = require("axios");
-const Status = require("./Status");
+
+class Status {
+    static Started = new Status({ color: 0x6aab11, friendlyName: 'Started' });
+    static Success = new Status({ color: 0x11ab2a, friendlyName: 'Successful' });
+    static Failed = new Status({ color: 0x82041d, friendlyName: 'Failed' });
+    static Cancelled = new Status({ color: 0xeeb10e, friendlyName: 'Cancelled' });
+    static Timedout = new Status({ color: 0x7290c1, friendlyName: 'Timed-Out' });
+
+    constructor ({ color, friendlyName }) {
+        this.color = color;
+        this.friendlyName = friendlyName;
+    }
+}
+
+const StartedStatus = Status.Success;
+const SuccessStatus = Status.Success;
+const FailedStatus = Status.Success;
+const CancelledStatus = Status.Success;
+const TimestoutStatus = Status.Success;
 
 module.exports = async function run () {
     try {
-        const octo = getOctokit(getInput("github_token"));
+        const octo = getOctokit(process.env.GITHUB_TOKEN);
         const lastCommit = await octo.rest.repos.getCommit({ ...context.repo, ref: context.sha });
 
         const fields = [];
         fields.push({ name: 'Build Branch', value: context.payload.ref?.toString().replace("refs/heads/", ""), inline: true});
+        fields.push({ name: `Commit Sender`, value: lastCommit.data.author.name, inline:  true });
 
         const status = getByStatus(lastCommit.status);
         
         const embed = {
             title: `Build ${status.friendlyName} | [${context.repo.repo}](https://github.com/${context.repo.owner}/${context.repo.repo})`,
+            type: 'rich',
             description: `\`\`\`${lastCommit.data.commit.message}\`\`\``,
             color: status.color,
+            url: lastCommit.data.url,
+            timestamp: new Date().toISOString (),
             fields: fields,
             author: {
-                name: lastCommit.data.author.name,
-                url: `https://github.com/${lastCommit.data.author.name}`,
-                icon_url: lastCommit.data.author.avatar_url
-            },
-            timestamp: new Date().toISOString ()
+                name: `${lastCommit.data.author.name}`,
+                url: `${lastCommit.data.author.url}`,
+                icon_url: `${lastCommit.data.author.avatar_url}`
+            }
         };
         
         const json = {
@@ -52,18 +73,18 @@ function getByStatus(status) {
     switch (status.toLowerCase()) {
         case 'started':
         case 'pending':
-            return Status.Started;
+            return StartedStatus;
         case 'success':
-            return Status.Success;
+            return SuccessStatus;
         case 'failure':
-            return Status.Failed;
+            return FailedStatus;
         case 'cancelled':
         case 'canceled':
-            return Status.Cancelled;
+            return CancelledStatus;
         case 'timedout':
         case 'timeout':
-            return Status.Timedout;
+            return TimestoutStatus;
         default:
-            return Status.Started;
+            return StartedStatus;
     }
 }

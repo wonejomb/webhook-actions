@@ -13,10 +13,8 @@ inputs:
     description: 'The discord webhook name'
     required: false
     default: 'Github Actions'
-  github_token:
-    description: 'The GitHub Token'
-    required: false
-    default: ${{ github.token }}
+env:
+  GITHUB_TOKEN: ${{ github.token }};
 
 runs:
   using: 'node20'
