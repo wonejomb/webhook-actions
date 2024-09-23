@@ -23,7 +23,7 @@ const TimedoutStatus = Status.Timedout;
 
 async function run() {
     try {
-        const octo = getOctokit(process.env.GITHUB_TOKEN);
+        const octo = getOctokit(getInput("github_token"));
 
         const lastCommit = await octo.rest.repos.getCommit({
             ...context.repo,
