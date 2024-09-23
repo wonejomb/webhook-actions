@@ -10,8 +10,6 @@ module.exports = async function run() {
             ref: context.sha
         });
 
-        const status = getStatusByName(getInput("status"));
-        
         const fields = [];
         if (getInput("version") && getInput("version") !== "?") {
             fields.push({ name: "Version", value: getInput("version"), inline: true });
@@ -29,7 +27,7 @@ module.exports = async function run() {
         }
 
         const embed = {
-            title: "Build " + userFriendlyName.get(status),
+            title: `Build Commit`,
             description: `\`\`\`${lastCommit.data.commit.message}\`\`\``,
             url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
             color: getInput('webhook_embed_color'),
