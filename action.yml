@@ -1,5 +1,6 @@
 name: 'wonejomb-webhook-action'
 description: 'A github action for discord webhooks.'
+icon: activity
 inputs:
   version:
     description: 'The build version.'
