@@ -21,7 +21,7 @@ const FailedStatus = Status.Failed;
 const CancelledStatus = Status.Cancelled;
 const TimedoutStatus = Status.Timedout;
 
-module.exports = async function run() {
+async function run() {
     try {
         const octo = getOctokit(process.env.GITHUB_TOKEN);
 
@@ -96,3 +96,5 @@ function getByStatus(status) {
             return StartedStatus;
     }
 }
+
+run ()
