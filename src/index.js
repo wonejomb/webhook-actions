@@ -56,7 +56,7 @@ async function run() {
         };
 
         const json = {
-            username: getInput("webhook_name"),
+            name: getInput("webhook_name"),
             avatar_url: getInput("webhook_avatar"),
             embeds: [embed]
         };
